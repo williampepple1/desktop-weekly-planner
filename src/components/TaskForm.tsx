@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import type { Task } from '../types';
+import type { Task, CreateTaskData } from '../types';
 import { X } from 'lucide-react';
 
 interface TaskFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'weekId'>) => void;
+  onSubmit: (task: CreateTaskData) => void;
   task?: Task | null;
 }
 

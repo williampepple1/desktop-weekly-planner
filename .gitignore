@@ -134,3 +134,53 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Tauri
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/WixTools
+src-tauri/WebView2Loader.dll
+src-tauri/wix/
+src-tauri/msi/
+src-tauri/deb/
+src-tauri/appimage/
+src-tauri/dmg/
+src-tauri/updater/
+src-tauri/updater.exe
+src-tauri/updater.app
+src-tauri/updater.dmg
+src-tauri/updater.deb
+src-tauri/updater.msi
+src-tauri/updater.AppImage
+src-tauri/updater.exe.sig
+src-tauri/updater.app.sig
+src-tauri/updater.dmg.sig
+src-tauri/updater.deb.sig
+src-tauri/updater.msi.sig
+src-tauri/updater.AppImage.sig
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+planner.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp

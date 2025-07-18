@@ -1,41 +1,39 @@
-# Weekly Planner
+# Weekly Planner - Desktop App
 
-A modern weekly planner application built with React 19, TypeScript 5.8, Tailwind CSS, and Firebase Firestore. Organize your tasks for the week with smooth drag-and-drop functionality to update progress.
+A modern, offline-first weekly planner built with Tauri, React, TypeScript, and SQLite.
 
 ## Features
 
-- 📅 **Weekly Calendar View**: Visual representation of your week with tasks organized by day
-- 🎯 **Task Management**: Add, edit, and delete tasks with title, description, priority, and status
-- 🚀 **Modern Drag & Drop**: Smooth progress updates using @dnd-kit (React 19 compatible)
-- 🔥 **Firebase Integration**: Real-time data persistence with Firestore
-- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
-- 🎨 **Modern UI**: Beautiful interface built with Tailwind CSS
-- ⚡ **Fast Development**: Built with Vite for lightning-fast development experience
+- **Offline-First**: Works completely offline with local SQLite database
+- **Drag & Drop**: Intuitive task management with drag and drop functionality
+- **Week View**: Organize tasks by day and status (To Do, In Progress, Completed)
+- **Priority Levels**: Set task priorities (Low, Medium, High)
+- **Local Storage**: All data stored locally on your machine
+- **Cross-Platform**: Works on Windows, macOS, and Linux
 
 ## Tech Stack
 
-- **Frontend**: React 19 with TypeScript 5.8
-- **Build Tool**: Vite 7
-- **Styling**: Tailwind CSS 3.4
-- **Database**: Firebase Firestore
-- **Drag & Drop**: @dnd-kit (modern, React 19 compatible)
-- **Date Handling**: date-fns 3.6
-- **Icons**: Lucide React
+- **Frontend**: React 19 + TypeScript + Tailwind CSS
+- **Backend**: Rust + Tauri
+- **Database**: SQLite (local file-based)
+- **UI Components**: Custom components with drag-and-drop support
+- **Build Tool**: Vite
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- Node.js 18+ and npm
+- Rust (latest stable)
+- Platform-specific build tools:
+  - **Windows**: Visual Studio Build Tools
+  - **macOS**: Xcode Command Line Tools
+  - **Linux**: Build essentials
 
-- Node.js (v18 or higher, v22 recommended)
-- npm or yarn
-- Firebase project
-
-### Installation
+## Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd weekly-planner
+   cd desktop-weekly-planner
    ```
 
 2. **Install dependencies**
@@ -43,110 +41,152 @@ A modern weekly planner application built with React 19, TypeScript 5.8, Tailwin
    npm install
    ```
 
-3. **Set up Firebase**
-
-   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Enable Firestore Database
-   - Get your Firebase configuration
-
-4. **Configure Firebase**
-
-   Update the Firebase configuration in `src/firebase/config.ts`:
-   ```typescript
-   const firebaseConfig = {
-     apiKey: "your-api-key",
-     authDomain: "your-auth-domain",
-     projectId: "your-project-id",
-     storageBucket: "your-storage-bucket",
-     messagingSenderId: "your-messaging-sender-id",
-     appId: "your-app-id"
-   };
-   ```
-
-5. **Start the development server**
+3. **Install Tauri CLI**
    ```bash
-   npm run dev
+   npm install --save-dev @tauri-apps/cli
    ```
 
-   The application will open at [http://localhost:5173](http://localhost:5173).
+## Development
 
-## Usage
+### Start Development Server
+```bash
+npm run tauri:dev
+```
 
-### Adding Tasks
-1. Click the "Add Task" button
-2. Fill in the task details (title, description, day, priority, status)
-3. Click "Add Task" to save
+This will:
+- Start the Vite dev server
+- Build the Rust backend
+- Launch the Tauri application window
 
-### Managing Tasks
-- **Edit**: Click the edit icon on any task card
-- **Delete**: Click the trash icon on any task card
-- **Update Progress**: Drag tasks between "To Do", "In Progress", and "Completed" columns
+### Build for Production
+```bash
+npm run tauri:build
+```
 
-### Navigation
-- Use the arrow buttons to navigate between weeks
-- The current week is displayed in the header
+This creates platform-specific installers in the `src-tauri/target/release/bundle/` directory.
 
 ## Project Structure
 
 ```
-src/
-├── components/          # React components
-│   ├── TaskCard.tsx    # Individual task card component
-│   ├── TaskForm.tsx    # Task creation/editing form
-│   └── WeekView.tsx    # Weekly calendar view
-├── firebase/           # Firebase configuration
-│   └── config.ts       # Firebase setup
-├── services/           # API services
-│   └── taskService.ts  # Task CRUD operations
-├── types/              # TypeScript type definitions
-│   └── index.ts        # Application types
-├── App.tsx             # Main application component
-├── main.tsx            # Application entry point
-└── index.css           # Global styles
+desktop-weekly-planner/
+├── src/                    # React frontend
+│   ├── components/         # React components
+│   ├── services/          # Frontend services
+│   ├── types/             # TypeScript type definitions
+│   └── App.tsx            # Main application component
+├── src-tauri/             # Rust backend
+│   ├── src/
+│   │   ├── database.rs    # SQLite database operations
+│   │   ├── lib.rs         # Tauri commands and setup
+│   │   └── main.rs        # Application entry point
+│   ├── Cargo.toml         # Rust dependencies
+│   └── tauri.conf.json    # Tauri configuration
+├── package.json           # Node.js dependencies
+└── README.md             # This file
 ```
 
-## Available Scripts
+## Database Schema
 
-- `npm run dev` - Start the development server (Vite)
-- `npm run build` - Build the app for production
-- `npm run preview` - Preview the production build
-- `npm run lint` - Run ESLint
+The application uses SQLite with a single `tasks` table:
 
-## Firebase Security Rules
-
-Make sure to set up appropriate Firestore security rules. Here's a basic example:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /tasks/{taskId} {
-      allow read, write: if true; // For development - customize for production
-    }
-  }
-}
+```sql
+CREATE TABLE tasks (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    day TEXT NOT NULL,
+    status TEXT NOT NULL,
+    priority TEXT NOT NULL,
+    week_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 ```
 
-## Why Vite?
+## Key Features
 
-- **Lightning Fast**: Instant server start and hot module replacement
-- **Modern Build**: Uses ES modules and native browser features
-- **TypeScript 5.8 Support**: Full support for the latest TypeScript features
-- **React 19 Compatible**: Built for the latest React version
-- **Better DX**: Superior developer experience with fast refresh
+### Task Management
+- Create, edit, and delete tasks
+- Set task priority (Low, Medium, High)
+- Track task status (To Do, In Progress, Completed)
+- Organize tasks by day of the week
 
-## Contributing
+### Drag & Drop
+- Move tasks between status columns
+- Move tasks between different days
+- Visual feedback during drag operations
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Data Persistence
+- All data stored locally in SQLite database
+- No internet connection required
+- Data persists between application restarts
+
+## Development Notes
+
+### Frontend (React/TypeScript)
+- Uses modern React hooks and functional components
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Drag and drop powered by @dnd-kit
+
+### Backend (Rust/Tauri)
+- SQLite database with rusqlite crate
+- Tauri commands for frontend-backend communication
+- Local file storage in app data directory
+- Thread-safe database operations with Mutex
+
+### Data Flow
+1. Frontend calls Tauri commands via `invoke()`
+2. Rust backend processes requests and updates SQLite
+3. Database changes are immediately reflected in the UI
+4. All operations are synchronous and local
+
+## Building for Distribution
+
+### Windows
+```bash
+npm run tauri:build
+# Installer will be in src-tauri/target/release/bundle/msi/
+```
+
+### macOS
+```bash
+npm run tauri:build
+# App bundle will be in src-tauri/target/release/bundle/dmg/
+```
+
+### Linux
+```bash
+npm run tauri:build
+# AppImage will be in src-tauri/target/release/bundle/appimage/
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Rust compilation errors**
+   - Ensure you have the latest Rust toolchain: `rustup update`
+   - Check platform-specific build tools are installed
+
+2. **Tauri build failures**
+   - Clear build cache: `npm run tauri clean`
+   - Reinstall dependencies: `npm install`
+
+3. **Database issues**
+   - Database file is stored in app data directory
+   - Check application logs for SQLite errors
+
+### Development Tips
+
+- Use `npm run tauri:dev` for development with hot reload
+- Check browser console for frontend errors
+- Check terminal output for Rust compilation errors
+- Database file location varies by platform:
+  - Windows: `%APPDATA%/weekly-planner/weekly_planner.db`
+  - macOS: `~/Library/Application Support/weekly-planner/weekly_planner.db`
+  - Linux: `~/.local/share/weekly-planner/weekly_planner.db`
 
 ## License
 
 This project is licensed under the MIT License.
-
-## Support
-
-If you encounter any issues or have questions, please open an issue on GitHub.
