@@ -21,12 +21,45 @@ A modern, offline-first weekly planner built with Tauri, React, TypeScript, and 
 
 ## Prerequisites
 
-- Node.js 18+ and npm
-- Rust (latest stable)
-- Platform-specific build tools:
-  - **Windows**: Visual Studio Build Tools
-  - **macOS**: Xcode Command Line Tools
-  - **Linux**: Build essentials
+### Required Software
+- **Node.js 18+** and npm
+- **Rust** (latest stable) - Install via [rustup.rs](https://rustup.rs/)
+- **Tauri CLI** - Will be installed as a dev dependency
+
+### Platform-Specific Requirements
+
+#### Windows
+- **Microsoft Visual Studio C++ Build Tools** or **Visual Studio 2022**
+- **WebView2** (usually pre-installed with Windows 10/11)
+- **Windows 10 SDK** (for building installers)
+
+#### macOS
+- **Xcode Command Line Tools**: `xcode-select --install`
+- **macOS 10.15+** (for building)
+
+#### Linux (Ubuntu/Debian)
+```bash
+sudo apt update
+sudo apt install libwebkit2gtk-4.0-dev \
+    build-essential \
+    curl \
+    wget \
+    libssl-dev \
+    libgtk-3-dev \
+    libayatana-appindicator3-dev \
+    librsvg2-dev
+```
+
+#### Linux (Fedora)
+```bash
+sudo dnf install webkit2gtk3-devel \
+    gtk3-devel \
+    libappindicator-gtk3-devel \
+    librsvg2-devel \
+    openssl-devel \
+    curl \
+    wget
+```
 
 ## Installation
 
@@ -36,14 +69,25 @@ A modern, offline-first weekly planner built with Tauri, React, TypeScript, and 
    cd desktop-weekly-planner
    ```
 
-2. **Install dependencies**
+2. **Install Node.js dependencies**
    ```bash
    npm install
    ```
 
-3. **Install Tauri CLI**
+3. **Verify Rust installation**
+   ```bash
+   rustc --version
+   cargo --version
+   ```
+
+4. **Install Tauri CLI** (if not already installed)
    ```bash
    npm install --save-dev @tauri-apps/cli
+   ```
+
+5. **Verify Tauri installation**
+   ```bash
+   npx tauri --version
    ```
 
 ## Development
@@ -53,17 +97,30 @@ A modern, offline-first weekly planner built with Tauri, React, TypeScript, and 
 npm run tauri:dev
 ```
 
-This will:
-- Start the Vite dev server
-- Build the Rust backend
+This command will:
+- Start the Vite dev server on `http://localhost:5173`
+- Compile the Rust backend
 - Launch the Tauri application window
+- Enable hot reload for both frontend and backend changes
+
+### Available Scripts
+```bash
+npm run dev          # Start Vite dev server only
+npm run build        # Build frontend for production
+npm run tauri:dev    # Start Tauri development
+npm run tauri:build  # Build Tauri app for production
+npm run tauri:clean  # Clean Tauri build artifacts
+```
 
 ### Build for Production
 ```bash
 npm run tauri:build
 ```
 
-This creates platform-specific installers in the `src-tauri/target/release/bundle/` directory.
+This creates platform-specific installers:
+- **Windows**: MSI installer in `src-tauri/target/release/bundle/msi/`
+- **macOS**: DMG file in `src-tauri/target/release/bundle/dmg/`
+- **Linux**: AppImage in `src-tauri/target/release/bundle/appimage/`
 
 ## Project Structure
 
@@ -168,24 +225,37 @@ npm run tauri:build
 1. **Rust compilation errors**
    - Ensure you have the latest Rust toolchain: `rustup update`
    - Check platform-specific build tools are installed
+   - Clear Rust cache: `cargo clean`
 
 2. **Tauri build failures**
-   - Clear build cache: `npm run tauri clean`
+   - Clear build cache: `npm run tauri:clean`
    - Reinstall dependencies: `npm install`
+   - Check Tauri version compatibility: `npx tauri --version`
 
 3. **Database issues**
    - Database file is stored in app data directory
    - Check application logs for SQLite errors
+   - Database file location varies by platform:
+     - Windows: `%APPDATA%/weekly-planner/weekly_planner.db`
+     - macOS: `~/Library/Application Support/weekly-planner/weekly_planner.db`
+     - Linux: `~/.local/share/weekly-planner/weekly_planner.db`
+
+4. **Port conflicts**
+   - If port 5173 is in use, change it in `vite.config.ts` and `src-tauri/tauri.conf.json`
 
 ### Development Tips
 
 - Use `npm run tauri:dev` for development with hot reload
 - Check browser console for frontend errors
 - Check terminal output for Rust compilation errors
-- Database file location varies by platform:
-  - Windows: `%APPDATA%/weekly-planner/weekly_planner.db`
-  - macOS: `~/Library/Application Support/weekly-planner/weekly_planner.db`
-  - Linux: `~/.local/share/weekly-planner/weekly_planner.db`
+- Use `cargo check` to verify Rust code without building
+- Database is automatically created on first run
+
+### Debugging
+
+- **Frontend**: Open browser dev tools in the Tauri window (Ctrl+Shift+I)
+- **Backend**: Check terminal output for Rust logs
+- **Database**: Use SQLite browser to inspect `planner.db` file
 
 ## License
 
