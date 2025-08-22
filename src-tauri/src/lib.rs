@@ -28,7 +28,8 @@ pub fn run() {
       update_task,
       delete_task,
       update_task_status,
-      update_task_day
+      update_task_day,
+      test_connection
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
@@ -39,6 +40,7 @@ async fn add_task(
   db: State<'_, Mutex<Database>>,
   request: CreateTaskRequest,
 ) -> Result<String, String> {
+  println!("Backend: Adding task with week_id: {}", request.week_id);
   let db = db.lock().map_err(|_| "Database lock error")?;
   
   let task = Task {
@@ -53,7 +55,9 @@ async fn add_task(
     updated_at: chrono::Utc::now(),
   };
   
+  println!("Backend: Task created with ID: {}", task.id);
   db.add_task(&task).map_err(|e| e.to_string())?;
+  println!("Backend: Task saved to database successfully");
   Ok(task.id)
 }
 
@@ -62,8 +66,19 @@ async fn get_tasks_for_week(
   db: State<'_, Mutex<Database>>,
   week_id: String,
 ) -> Result<Vec<Task>, String> {
+  println!("Backend: Getting tasks for week_id: {}", week_id);
   let db = db.lock().map_err(|_| "Database lock error")?;
-  db.get_tasks_for_week(&week_id).map_err(|e| e.to_string())
+  let result = db.get_tasks_for_week(&week_id);
+  match result {
+    Ok(tasks) => {
+      println!("Backend: Successfully retrieved {} tasks for week {}", tasks.len(), week_id);
+      Ok(tasks)
+    }
+    Err(e) => {
+      println!("Backend: Error retrieving tasks: {}", e);
+      Err(e.to_string())
+    }
+  }
 }
 
 #[tauri::command]
@@ -117,4 +132,10 @@ async fn update_task_day(
     priority: None,
   };
   db.update_task(&id, &updates).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn test_connection() -> Result<String, String> {
+  println!("Backend: Test connection called");
+  Ok("Backend is working!".to_string())
 }

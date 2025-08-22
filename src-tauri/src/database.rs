@@ -27,7 +27,10 @@ impl Database {
         std::fs::create_dir_all(&app_dir).expect("Failed to create app data directory");
         
         let db_path = app_dir.join("weekly_planner.db");
-        let conn = Connection::open(db_path)?;
+        println!("Database path: {:?}", db_path);
+        
+        let conn = Connection::open(&db_path)?;
+        println!("Database opened successfully at: {:?}", db_path);
         
         // Initialize the database with tables
         Self::init_database(&conn)?;
@@ -58,6 +61,7 @@ impl Database {
     
     pub fn add_task(&self, task: &Task) -> Result<()> {
         let conn = self.conn.lock().unwrap();
+        println!("Adding task: {:?}", task.title);
         conn.execute(
             "INSERT INTO tasks (id, title, description, day, status, priority, week_id, created_at, updated_at)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
@@ -73,11 +77,13 @@ impl Database {
                 task.updated_at.to_rfc3339(),
             ],
         )?;
+        println!("Task added successfully");
         Ok(())
     }
     
     pub fn get_tasks_for_week(&self, week_id: &str) -> Result<Vec<Task>> {
         let conn = self.conn.lock().unwrap();
+        println!("Fetching tasks for week: {}", week_id);
         let mut stmt = conn.prepare(
             "SELECT id, title, description, day, status, priority, week_id, created_at, updated_at
              FROM tasks WHERE week_id = ?1 ORDER BY created_at ASC"
@@ -105,6 +111,7 @@ impl Database {
         for task in task_iter {
             tasks.push(task?);
         }
+        println!("Found {} tasks for week {}", tasks.len(), week_id);
         Ok(tasks)
     }
     

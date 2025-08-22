@@ -2,18 +2,22 @@ import type { Task, CreateTaskData } from '../types';
 
 // Tauri invoke function
 const invoke = async (command: string, args: any): Promise<any> => {
+  console.log('Invoke called with command:', command, 'args:', args);
+  
   // Check if we're in Tauri environment
   if (typeof window !== 'undefined' && (window as any).__TAURI__) {
     try {
-      // Use the global Tauri invoke function
-      return await (window as any).__TAURI__.invoke(command, args);
+      console.log('Using real Tauri invoke');
+      const result = await (window as any).__TAURI__.invoke(command, args);
+      console.log('Tauri invoke result:', result);
+      return result;
     } catch (error) {
       console.error('Failed to call Tauri invoke:', error);
     }
   }
   
   // Fallback for development (when not in Tauri)
-  console.log('Mock Tauri invoke:', command, args);
+  console.log('Using mock Tauri invoke');
   if (command === 'get_tasks_for_week') {
     return [];
   } else if (command === 'add_task') {
@@ -26,8 +30,11 @@ export const taskService = {
   // Add a new task
   async addTask(task: CreateTaskData, _userId: string, weekStart: Date): Promise<string> {
     const weekId = weekStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    console.log('Frontend: Adding task with weekId:', weekId);
+    console.log('Frontend: Task data:', task);
     
     try {
+      // In addTask function
       const taskId = await invoke('add_task', {
         request: {
           title: task.title,
@@ -35,13 +42,19 @@ export const taskService = {
           day: task.day,
           status: task.status,
           priority: task.priority,
-          weekId: weekId,
+          week_id: weekId,  // ✅ Changed to snake_case
         }
       }) as string;
       
+      // In getTasksForWeek function  
+      const tasks = await invoke('get_tasks_for_week', {
+        week_id: weekId  // ✅ Changed to snake_case
+      }) as Task[];
+      
+      console.log('Frontend: Task added with ID:', taskId);
       return taskId;
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('Frontend: Error adding task:', error);
       throw error;
     }
   },
@@ -49,17 +62,19 @@ export const taskService = {
   // Get all tasks for a specific week
   async getTasksForWeek(weekStart: Date, _userId: string): Promise<Task[]> {
     const weekId = weekStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-    console.log('Fetching tasks for weekId:', weekId);
+    console.log('Frontend: Fetching tasks for weekId:', weekId);
+    console.log('Frontend: weekStart date:', weekStart);
     
     try {
       const tasks = await invoke('get_tasks_for_week', {
         weekId: weekId
       }) as Task[];
       
-      console.log('Retrieved tasks:', tasks.length, 'tasks');
+      console.log('Frontend: Retrieved tasks:', tasks.length, 'tasks');
+      console.log('Frontend: Task details:', tasks);
       return tasks;
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('Frontend: Error fetching tasks:', error);
       return [];
     }
   },
@@ -118,4 +133,4 @@ export const taskService = {
       throw error;
     }
   },
-}; 
+};
